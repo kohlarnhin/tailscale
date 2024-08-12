@@ -1,0 +1,49 @@
+name: Build and Release Derper
+
+on:
+  push:
+    tags:
+      - 'v1.0.0'  # 只有推送符合版本号格式的标签时才触发，如 v1.0.0
+  workflow_dispatch:  # 允许手动触发工作流
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+
+    - name: Build derper
+      run: |
+        cd cmd/derper
+        go build -o derper
+
+    - name: Archive derper
+      run: tar -czf derper.tar.gz -C cmd/derper derper
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}  # 使用推送的标签名称
+        release_name: "Derper Release ${{ github.ref_name }}"
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./derper.tar.gz
+        asset_name: derper-{{ runner.os }}-{{ runner.arch }}.tar.gz
+        asset_content_type: application/gzip
