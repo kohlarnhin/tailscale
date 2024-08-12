@@ -3,7 +3,7 @@ name: Build and Release Derper
 on:
   push:
     tags:
-      - 'v1.0.0'  # 只有推送符合版本号格式的标签时才触发，如 v1.0.0
+      - 'v*.*.*'  # 只有推送符合版本号格式的标签时才触发，如 v1.0.0
   workflow_dispatch:  # 允许手动触发工作流
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.20'
+        go-version: '1.22'
 
     - name: Build derper
       run: |
